@@ -1,22 +1,19 @@
-import csv
-
-f = open("list_of_songs.csv", "r")
-
-
 def start():
-    print("Welcome to <Songs to Learn> - By Rolf Rokseth")
+    print("\n   Welcome to <Songs to Learn> - By Rolf Rokseth","\n  ",len(songlist),"Songs loaded")
+
+
     menu()
 
 
 def menu():
     choice: str = input(
-        """
-        Songs to learn - By Rolf Rokseth
-            L - List song
-            A - Add Song
-            C - Mark song complete
-            Q - Quit
-        """)
+    """
+    Menu:
+    L - List song
+    A - Add Song
+    C - Mark song complete
+    Q - Quit
+    """)
     menu_Check(choice)
 
 
@@ -24,15 +21,14 @@ def menu_Check(choice):
     while choice.upper() not in ['L', 'A', 'C', 'Q']:
         print("Invalid input")
         choice: str = input(
-            """
-            Songs to learn - By Rolf Rokseth
-                L - List song
-                A - Add Song
-                C - Mark song complete
-                Q - Quit
-            """)
+    """
+    Menu:
+    L - List song
+    A - Add Song
+    C - Mark song complete
+    Q - Quit
+    """)
     menu_Choice(choice.upper())
-
 
 
 def menu_Choice(choice):
@@ -43,8 +39,7 @@ def menu_Choice(choice):
     elif choice == "A":
         line_Input()
     elif choice == "C":
-        complete_song()
-
+        all_songs_learned()
 
 
 def list_Songs(songlist):
@@ -52,9 +47,12 @@ def list_Songs(songlist):
     for row in songlist:
         print('{0}.{4:2}{1:30}-{2:30}({3})'.format(i, row[0], row[1], row[2], row[3]))
         i = i + 1
+    songlist_string = str(songlist)
+    songlist_count = songlist_string.count('*')
+    number_of_songs = len(songlist)
+    print("\n", number_of_songs - songlist_count, "Songs learned, ", songlist_count, "songs still to learn")
     menu()
     return songlist
-
 
 
 def line_Input():
@@ -79,7 +77,7 @@ def line_Input():
         new_Year = str(input("Year: "))
         if len(new_Year) == 4 and str.isnumeric(new_Year) == True:
             yearloop = 0
-            print("Song added")
+            print(new_Song,"by",new_Artist,"(",new_Year,") Added to song list")
         else:
             print("Please enter the year of song release in YYYY format")
     new_Line = [new_Song, new_Artist, new_Year, '*']
@@ -92,30 +90,72 @@ def add_Song(new_Line, songList):
     menu()
     return songList
 
-def complete_song():
-    i = 1
-    for row in songlist:
-        print('{0}.{4:2}{1:30}-{2:30}({3})'.format(i, row[0], row[1], row[2], row[3]))
-        i = i + 1
-    listlenght = len(songlist)
+def all_songs_learned():
+    songstring = str(songlist)
+    if songstring.count("*") == 0:
+        print("No more songs to learn!")
+        menu()
+    else:
+        complete_song_verify()
 
+def complete_song_verify():
+    while True:
+        maxchoice = len(songlist)
+        try:
+            songlist_decision = int(input("Enter the number of the song you want to complete: ")) - 1
+            if songlist_decision < 0:
+                print("Please dont enter 0 or negative numbers")
+                continue
+            if songlist_decision > maxchoice:
+                print("Please enter a number between 1 and",maxchoice)
+                continue
+            if songlist[songlist_decision][3] == " ":
+                print("You have already learned",songlist[songlist_decision][0])
+                menu()
+        except ValueError:
+            print("Invalid input, please enter a valid number")
+            continue
+        else:
+            print("\n")
+            break
 
-    songlist_decision = int(input("Enter the number of the song you want to complete"))-1
+    complete_song(songlist_decision)
+
+def complete_song(songlist_decision):
+
     songlist[songlist_decision] = [songlist[songlist_decision].replace('*', ' ')
                                    for songlist[songlist_decision] in songlist[songlist_decision]]
-    print(songlist[songlist_decision]," learned")
+    print("Congratulations on learning the song:", songlist[songlist_decision][0], "by", songlist[songlist_decision][1])
     menu()
 
+
 def quit(f, songlist):
-    print("Exiting program")
+    print(len(songlist),"Songs saved to list_of_songs.csv - Exiting program")
+    for i in range(0, len(songlist)):
+        song_detail = songlist[i]
+        if song_detail[3] == "*":
+            song_detail[3] = "y"
+        else:
+            song_detail[3] = "n"
     with open('list_of_songs.csv', 'w') as f:
         writer = csv.writer(f, lineterminator='\n')
 
         writer.writerows(songlist)
 
 
+import csv
+
+f = open("list_of_songs.csv", "r")
+
 reader = csv.reader(f)
 songlist = list(reader)
+
+for i in range(0, len(songlist)):
+    song_detail = songlist[i]
+    if song_detail[3] == "y":
+        song_detail[3] = "*"
+    else:
+        song_detail[3] = " "
 
 start()
 
